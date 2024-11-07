@@ -53,12 +53,10 @@ func receiveQuote(reader *bufio.Reader) (JSONQuote, error) {
 		return JSONQuote{}, fmt.Errorf("error reading response: %w", err)
 	}
 
-	// if empty
 	if len(res) == 0 {
 		return JSONQuote{}, fmt.Errorf("received empty response from server")
 	}
 
-	// parse JSON
 	var quote JSONQuote
 	if err := json.Unmarshal(res, &quote); err != nil {
 		return JSONQuote{}, fmt.Errorf("error unmarshalling quote: %w", err)
@@ -97,21 +95,17 @@ func main() {
 		log.Fatal("Error parsing difficulty:", err)
 	}
 
-	// Solution
 	solution := powsolver.FindSolution(challenge, difficulty)
 
-	// Send to server
 	if err := sendSolution(conn, solution); err != nil {
 		log.Fatal(err)
 	}
 
-	// Recieve quote
 	quote, err := receiveQuote(reader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Print
 	log.Printf("Quote: %s\n", quote.Quote)
 	log.Printf("Author: %s\n", quote.Author)
 }
