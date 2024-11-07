@@ -22,7 +22,7 @@ type Application struct {
 	quoteService *quotes.Service
 }
 
-// NewApplication creates and initializes the application.
+// NewApplication ...
 func NewApplication(cfg *config.Config) (*Application, error) {
 	powService := pow.NewService()
 	repo, err := jsonquote.NewRepo()
@@ -32,7 +32,6 @@ func NewApplication(cfg *config.Config) (*Application, error) {
 	quoteService := quotes.NewService(repo)
 	handler := tcp_transport.NewHandler(powService, quoteService, cfg.Server.Difficulty)
 
-	// Initialize TCP server
 	server := tcp.NewServer(
 		cfg.Server.Port,
 		handler,
@@ -50,9 +49,8 @@ func NewApplication(cfg *config.Config) (*Application, error) {
 	}, nil
 }
 
-// Start the application server.
+// Start ...
 func (app *Application) Start(ctx context.Context) error {
-	// Start server in a goroutine
 	errCh := make(chan error, 1)
 	go func() {
 		if err := app.server.Start(ctx); err != nil {
@@ -60,7 +58,6 @@ func (app *Application) Start(ctx context.Context) error {
 		}
 	}()
 
-	// Graceful shutdown handling
 	select {
 	case err := <-errCh:
 		return err
@@ -69,7 +66,7 @@ func (app *Application) Start(ctx context.Context) error {
 	}
 }
 
-// Shutdown the application services gracefully.
+// Shutdown ...
 func (app *Application) Shutdown(ctx context.Context) error {
 	slog.Info("Starting graceful shutdown...")
 	errCh := make(chan error, 3)

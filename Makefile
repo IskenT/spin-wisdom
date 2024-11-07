@@ -11,9 +11,7 @@ test:
 
 .PHONY: generate-mocks
 generate-mocks:
-	# Проверяем, установлен ли mockgen в локальной папке, иначе устанавливаем его
 	$(LOCAL_BIN)/mockgen --version || (GOBIN=$(LOCAL_BIN) go install github.com/golang/mock/mockgen@v1.6.0)
-	# Запускаем go generate для генерации моков
 	go generate -run "mockgen" ./...
 
 start-server:

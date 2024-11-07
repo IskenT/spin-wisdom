@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// FindSolution ...
 func FindSolution(challenge string, difficulty int) int {
 	var (
 		wg       sync.WaitGroup
@@ -16,6 +17,7 @@ func FindSolution(challenge string, difficulty int) int {
 	)
 
 	targetPrefix := strings.Repeat("0", difficulty/4)
+
 	numWorkers := 8
 	workChan := make(chan int, numWorkers*2)
 
@@ -23,8 +25,10 @@ func FindSolution(challenge string, difficulty int) int {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+
 			for nonce := range workChan {
 				hashStr := hashWithNonce(challenge, nonce)
+
 				if strings.HasPrefix(hashStr, targetPrefix) {
 					mu.Lock()
 					if solution == 0 {
@@ -49,6 +53,8 @@ func FindSolution(challenge string, difficulty int) int {
 
 func hashWithNonce(challenge string, nonce int) string {
 	data := []byte(fmt.Sprintf("%s%d", challenge, nonce))
+
 	hash := sha256.Sum256(data)
+
 	return hex.EncodeToString(hash[:])
 }

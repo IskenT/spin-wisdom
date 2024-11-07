@@ -36,21 +36,6 @@ type Server struct {
 	shutdownCh chan struct{}
 }
 
-type ServerOption func(*Server)
-
-func WithMaxConnections(n int) ServerOption {
-	return func(s *Server) {
-		s.maxConns = n
-	}
-}
-
-func WithTimeouts(read, write time.Duration) ServerOption {
-	return func(s *Server) {
-		s.readTimeout = read
-		s.writeTimeout = write
-	}
-}
-
 func NewServer(port int, handler TCPHandler, opts ...ServerOption) *Server {
 	s := &Server{
 		port:       port,
@@ -64,6 +49,21 @@ func NewServer(port int, handler TCPHandler, opts ...ServerOption) *Server {
 	}
 
 	return s
+}
+
+type ServerOption func(*Server)
+
+func WithMaxConnections(n int) ServerOption {
+	return func(s *Server) {
+		s.maxConns = n
+	}
+}
+
+func WithTimeouts(read, write time.Duration) ServerOption {
+	return func(s *Server) {
+		s.readTimeout = read
+		s.writeTimeout = write
+	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -165,22 +165,25 @@ func (s *Server) acceptConnections(ctx context.Context) {
 }
 
 func isTemporaryError(err error) bool {
+	var tempErr interface {
+		Temporary() bool
+	}
+	if errors.As(err, &tempErr) {
+		return tempErr.Temporary()
+	}
+
+	return isSystemTemporaryError(err)
+}
+
+func isSystemTemporaryError(err error) bool {
 	switch {
-	case errors.Is(err, syscall.EMFILE):
-		return true
-	case errors.Is(err, syscall.ENFILE):
-		return true
-	case errors.Is(err, syscall.ECONNABORTED):
-		return true
-	case errors.Is(err, syscall.EINTR):
-		return true
-	case errors.Is(err, syscall.EAGAIN):
+	case errors.Is(err, syscall.EMFILE),
+		errors.Is(err, syscall.ENFILE),
+		errors.Is(err, syscall.ECONNABORTED),
+		errors.Is(err, syscall.EINTR),
+		errors.Is(err, syscall.EAGAIN):
 		return true
 	default:
-		var timeoutErr interface{ Timeout() bool }
-		if errors.As(err, &timeoutErr) {
-			return timeoutErr.Timeout()
-		}
 		return false
 	}
 }
