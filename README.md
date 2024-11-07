@@ -34,7 +34,6 @@ make run-client
 
 ## Resources
 
-- [Word of Wisdom](https://en.wikipedia.org/wiki/Word_of_Wisdom) (Asian philosophers were used purpose.)
+- [Word of Wisdom](https://en.wikipedia.org/wiki/Word_of_Wisdom) (Asian philosophers were used on purpose:)
 - [Proof of work](https://en.wikipedia.org/wiki/Proof_of_work)
 - [Hashcash](https://en.wikipedia.org/wiki/Hashcash)
-- [Distributed Consensus – Proof-of-Work](https://oliverjumpertz.com/distributed-consensus-proof-of-work/)

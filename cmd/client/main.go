@@ -58,9 +58,6 @@ func receiveQuote(reader *bufio.Reader) (JSONQuote, error) {
 		return JSONQuote{}, fmt.Errorf("received empty response from server")
 	}
 
-	// print
-	fmt.Println("Received response:", string(res))
-
 	// parse JSON
 	var quote JSONQuote
 	if err := json.Unmarshal(res, &quote); err != nil {

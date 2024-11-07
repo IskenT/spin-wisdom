@@ -1,3 +1,4 @@
+//go:generate mockgen -source=handler.go -destination=handler_mock.go -package=tcp_transport . PowService, QuoteService
 package tcp_transport
 
 import (

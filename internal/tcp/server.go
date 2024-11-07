@@ -1,12 +1,16 @@
+//go:generate mockgen -source=server.go -destination=server_mock.go -package=tcp . TCPHandler
+
 package tcp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -132,14 +136,17 @@ func (s *Server) acceptConnections(ctx context.Context) {
 				return
 			}
 
-			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+			switch {
+			case errors.Is(err, net.ErrClosed):
+				return
+			case isTemporaryError(err):
 				slog.Warn("Temporary error accepting connection", "error", err)
 				time.Sleep(time.Second)
 				continue
+			default:
+				slog.Error("Error accepting connection", "error", err)
+				return
 			}
-
-			slog.Error("Error accepting connection", "error", err)
-			return
 		}
 
 		select {
@@ -154,6 +161,27 @@ func (s *Server) acceptConnections(ctx context.Context) {
 				slog.Warn("Connection rejected: max connections reached")
 			}
 		}
+	}
+}
+
+func isTemporaryError(err error) bool {
+	switch {
+	case errors.Is(err, syscall.EMFILE):
+		return true
+	case errors.Is(err, syscall.ENFILE):
+		return true
+	case errors.Is(err, syscall.ECONNABORTED):
+		return true
+	case errors.Is(err, syscall.EINTR):
+		return true
+	case errors.Is(err, syscall.EAGAIN):
+		return true
+	default:
+		var timeoutErr interface{ Timeout() bool }
+		if errors.As(err, &timeoutErr) {
+			return timeoutErr.Timeout()
+		}
+		return false
 	}
 }
 
